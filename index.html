@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Organic Lab — Multiplayer Prototype</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#0b1020;color:#eef2ff}
+button,input{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:12px 18px;font-weight:700}
+.app{max-width:1050px;margin:auto;padding:24px}.card{background:#151d35;border:1px solid #293553;border-radius:20px;padding:24px;box-shadow:0 12px 35px #0004}
+h1{margin:0 0 8px;font-size:34px}.muted{color:#aab5d0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.hidden{display:none}
+.primary{background:#7c5cff;color:white}.secondary{background:#26324f;color:white}.danger{background:#a63d5b;color:white}
+input{width:100%;padding:13px;border-radius:12px;border:1px solid #394665;background:#0e1528;color:white;margin:8px 0 14px}
+.logo{font-size:50px}.pill{display:inline-block;background:#24304d;padding:7px 12px;border-radius:999px;margin:4px}.question{font-size:25px;line-height:1.35;margin:20px 0}.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}.answer{background:#202b49;color:white;text-align:left}.answer:hover{background:#2c3a60}.answer.selected{outline:3px solid #7c5cff}.answer.correct{background:#176b50}.answer.wrong{background:#71394b}.top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.score{font-size:28px;font-weight:800}.leader{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #293553}.qr{background:white;padding:12px;border-radius:12px;display:inline-block}.small{font-size:13px}.notice{padding:12px;border-radius:12px;background:#202b49;margin:12px 0}.timer{font-size:30px;font-weight:800}.bar{height:9px;background:#27324c;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:#7c5cff;width:0}
+@media(max-width:650px){.answers{grid-template-columns:1fr}.app{padding:14px}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="home" class="card">
+    <div class="logo">🧪</div><h1>ORGANIC LAB</h1>
+    <p class="muted">Multiplayer classroom prototype — สมบัติของสารอินทรีย์</p>
+    <div class="grid" style="margin-top:20px">
+      <button class="primary" onclick="show('teacher')">👨‍🏫 สร้างห้อง (Teacher)</button>
+      <button class="secondary" onclick="show('join')">📱 เข้าห้อง (Player)</button>
+    </div>
+    <div class="notice small">Prototype นี้ใช้ PeerJS สำหรับการสื่อสารแบบ Real-time ระหว่างเครื่องโดยไม่ต้องมีฐานข้อมูลส่วนตัวของคุณ</div>
+  </div>
+
+  <div id="teacher" class="card hidden">
+    <div class="top"><div><h1>👨‍🏫 Teacher Mode</h1><p class="muted">สร้างห้อง แล้วให้ทุกคนสแกน QR</p></div><button class="secondary" onclick="location.reload()">หน้าแรก</button></div>
+    <div id="teacherSetup">
+      <button class="primary" onclick="createRoom()">➕ สร้างห้อง</button>
+    </div>
+    <div id="teacherRoom" class="hidden">
+      <div class="grid">
+        <div>
+          <div class="notice">Room Code: <b id="roomCode"></b></div>
+          <div class="qr"><div id="qrcode"></div></div>
+          <p class="small muted">นักเรียนเปิดลิงก์นี้หรือสแกน QR แล้วใส่ชื่อ</p>
+        </div>
+        <div>
+          <h2>👥 ผู้เล่น <span id="playerCount">0</span></h2>
+          <div id="playerList"></div>
+          <button class="primary" onclick="startGame()">▶ เริ่มเกม</button>
+          <button class="secondary" onclick="nextQuestion()">ถัดไป →</button>
+        </div>
+      </div>
+      <hr style="border-color:#293553;margin:24px 0">
+      <div id="teacherQuestion"><p class="muted">รอผู้เล่นเข้าห้อง...</p></div>
+      <h2>🏆 Leaderboard</h2><div id="leaderboard"></div>
+    </div>
+  </div>
+
+  <div id="join" class="card hidden">
+    <div class="top"><div><h1>📱 Join Game</h1><p class="muted">ใส่รหัสห้องและชื่อของคุณ</p></div><button class="secondary" onclick="location.reload()">หน้าแรก</button></div>
+    <label>Room Code</label><input id="joinCode" maxlength="6" placeholder="เช่น A7K2P9">
+    <label>ชื่อผู้เล่น</label><input id="playerName" maxlength="20" placeholder="เช่น Bank">
+    <button class="primary" onclick="joinRoom()">🚀 เข้าห้อง</button>
+    <div id="joinStatus" class="notice hidden"></div>
+  </div>
+
+  <div id="player" class="card hidden">
+    <div class="top"><div><h1>🧪 Organic Lab</h1><span class="pill">Room: <b id="pRoom"></b></span></div><div class="score" id="myScore">0</div></div>
+    <div id="playerQuestion"></div>
+    <div id="playerBoard"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+const QUESTIONS=[
+ {q:"สารใดมีแนวโน้มละลายน้ำได้ดีที่สุด?", a:["Hexane","Ethanol","Benzene","Pentane"], c:1, e:"Ethanol มีหมู่ –OH จึงเกิดแรงดึงดูดกับน้ำได้ดี"},
+ {q:"ข้อใดเป็นหมู่ฟังก์ชันของ Alcohol?", a:["–OH","–COOH","–CHO","–COO–"], c:0, e:"Alcohol มีหมู่ไฮดรอกซิล –OH"},
+ {q:"สารกลุ่มใดมักมีจุดเดือดสูงขึ้นเมื่อแรงยึดเหนี่ยวระหว่างโมเลกุลมากขึ้น?", a:["สารทุกกลุ่ม","เฉพาะ Alkane","เฉพาะ Alkene","ไม่มี"], c:0, e:"แรงยึดเหนี่ยวมากต้องใช้พลังงานมากขึ้นในการแยกโมเลกุล"},
+ {q:"ข้อใดเป็นสมบัติทางกายภาพ?", a:["การติดไฟ","การเกิดปฏิกิริยา","จุดเดือด","การออกซิไดซ์"], c:2, e:"จุดเดือดเป็นสมบัติทางกายภาพ"},
+ {q:"สารใดมีหมู่ –COOH?", a:["Ethanol","Ethanoic acid","Ethene","Ethanal"], c:1, e:"กรดคาร์บอกซิลิกมีหมู่ –COOH"}
+];
+
+let role="",peer=null,conn=null,room="",players={},qIndex=-1,answered=false;
+const $=id=>document.getElementById(id);
+function show(id){["home","teacher","join","player"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+function code(){return Math.random().toString(36).slice(2,8).toUpperCase()}
+
+function createRoom(){
+ role="teacher"; room=code();
+ peer=new Peer("organiclab-"+room);
+ peer.on("open",id=>{
+   $("roomCode").textContent=room; $("teacherSetup").classList.add("hidden"); $("teacherRoom").classList.remove("hidden");
+   const joinUrl=location.href.split("?")[0]+"?room="+room;
+   new QRCode($("qrcode"),{text:joinUrl,width:190,height:190});
+   history.replaceState({}, "", "?room="+room);
+ });
+ peer.on("connection",c=>{
+   c.on("open",()=>{conn=c; c.on("data",data=>teacherReceive(c,data));});
+ });
+ peer.on("error",e=>alert("Peer error: "+e.message));
+ renderPlayers();
+}
+function teacherReceive(c,d){
+ if(d.type==="join"){players[d.id]={id:d.id,name:d.name,score:0,conn:c,answer:null}; c.send({type:"state",room,qIndex,players:publicPlayers()}); renderAll();}
+ if(d.type==="answer" && players[d.id]){
+   players[d.id].answer=d.answer;
+   if(d.answer===QUESTIONS[qIndex].c) players[d.id].score+=10;
+   c.send({type:"answerResult",correct:d.answer===QUESTIONS[qIndex].c,score:players[d.id].score,explanation:QUESTIONS[qIndex].e});
+   broadcast({type:"scores",players:publicPlayers()}); renderAll();
+ }
+}
+function publicPlayers(){return Object.values(players).map(p=>({id:p.id,name:p.name,score:p.score,answer:p.answer})).sort((a,b)=>b.score-a.score)}
+function broadcast(d){Object.values(players).forEach(p=>{try{p.conn.send(d)}catch(e){}})}
+function renderPlayers(){
+ $("playerCount").textContent=Object.keys(players).length;
+ $("playerList").innerHTML=publicPlayers().map(p=>`<div class="leader"><span>👤 ${esc(p.name)}</span><b>${p.score}</b></div>`).join("")||"<p class='muted'>ยังไม่มีผู้เล่น</p>";
+ $("leaderboard").innerHTML=publicPlayers().map((p,i)=>`<div class="leader"><span>${i<3?["🥇","🥈","🥉"][i]:""+(i+1)+". "} ${esc(p.name)}</span><b>${p.score}</b></div>`).join("")||"<p class='muted'>ยังไม่มีคะแนน</p>";
+}
+function renderAll(){renderPlayers();renderTeacherQ();}
+function renderTeacherQ(){
+ if(qIndex<0){$("teacherQuestion").innerHTML="<p class='muted'>กดเริ่มเกมเพื่อส่งคำถามไปยังทุกคน</p>";return}
+ const q=QUESTIONS[qIndex],n=Object.values(players).filter(p=>p.answer!==null).length;
+ $("teacherQuestion").innerHTML=`<div class="pill">ข้อ ${qIndex+1}/${QUESTIONS.length}</div><div class="question">${q.q}</div><div class="answers">${q.a.map((x,i)=>`<div class="answer ${countAnswer(i)>0?'selected':''}">${String.fromCharCode(65+i)}. ${x} <span class="small">(${countAnswer(i)})</span></div>`).join("")}</div><p class="muted">ตอบแล้ว ${n}/${Object.keys(players).length} คน</p>`;
+}
+function countAnswer(i){return Object.values(players).filter(p=>p.answer===i).length}
+function startGame(){qIndex=0; resetAnswers(); broadcast({type:"question",qIndex,q:QUESTIONS[qIndex]}); renderAll()}
+function nextQuestion(){if(qIndex<0)return startGame(); if(qIndex>=QUESTIONS.length-1){broadcast({type:"finished",players:publicPlayers()}); $("teacherQuestion").innerHTML="<h2>🎉 จบเกม!</h2>"; return} qIndex++;resetAnswers();broadcast({type:"question",qIndex,q:QUESTIONS[qIndex]});renderAll()}
+function resetAnswers(){Object.values(players).forEach(p=>p.answer=null)}
+function joinRoom(){
+ room=$("joinCode").value.trim().toUpperCase(); const name=$("playerName").value.trim()||"Player";
+ if(!room)return $("joinStatus").textContent="กรุณาใส่รหัสห้อง";
+ role="player"; peer=new Peer(); peer.on("open",id=>{
+   conn=peer.connect("organiclab-"+room,{reliable:true});
+   conn.on("open",()=>{conn.send({type:"join",id,name});show("player");$("pRoom").textContent=room});
+   conn.on("data",playerReceive);
+   conn.on("error",e=>alert("เชื่อมต่อไม่ได้: "+e.message));
+ });
+ peer.on("error",e=>{$("joinStatus").classList.remove("hidden");$("joinStatus").textContent="ไม่พบห้องนี้ หรือห้องยังไม่พร้อม"});
+}
+function playerReceive(d){
+ if(d.type==="state"){ $("myScore").textContent=(d.players.find(p=>p.id===peer.id)||{}).score||0; if(d.qIndex>=0) renderPlayerQ(d.qIndex,d.q)}
+ if(d.type==="question") renderPlayerQ(d.qIndex,d.q);
+ if(d.type==="answerResult"){answered=true;$("myScore").textContent=d.score;document.querySelectorAll(".answer").forEach((el,i)=>{if(i===QUESTIONS[qIndex].c)el.classList.add("correct")});$("playerBoard").innerHTML=`<div class="notice">${d.correct?"✅ ถูกต้อง +10":"❌ ยังไม่ถูก"}<br>${d.explanation}</div>`}
+ if(d.type==="scores"){$("myScore").textContent=(d.players.find(p=>p.id===peer.id)||{}).score||0}
+ if(d.type==="finished"){$("playerQuestion").innerHTML="<h2>🎉 จบเกม!</h2><p>คะแนนของคุณ: "+$("myScore").textContent+"</p>";$("playerBoard").innerHTML=d.players.map((p,i)=>`<div class="leader"><span>${i+1}. ${esc(p.name)}</span><b>${p.score}</b></div>`).join("")}
+}
+function renderPlayerQ(i,q){
+ qIndex=i;answered=false;
+ $("playerQuestion").innerHTML=`<div class="pill">ข้อ ${i+1}/${QUESTIONS.length}</div><div class="question">${q.q}</div><div class="answers">${q.a.map((x,j)=>`<button class="answer" onclick="sendAnswer(${j})">${String.fromCharCode(65+j)}. ${x}</button>`).join("")}</div>`;
+ $("playerBoard").innerHTML="<p class='muted'>เลือกคำตอบหนึ่งข้อ</p>";
+}
+function sendAnswer(i){if(answered)return;answered=true;document.querySelectorAll(".answer").forEach(b=>b.disabled=true);conn.send({type:"answer",id:peer.id,answer:i})}
+function esc(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+const params=new URLSearchParams(location.search); if(params.get("room")){$("joinCode").value=params.get("room");show("join")}
+</script>
+</body>
+</html>
