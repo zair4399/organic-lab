@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Organic Lab — Chem Heist</title>
+<style>
+:root{
+ --bg:#07111d;--card:#0e1b2b;--card2:#12243a;--line:#233b56;--text:#eff7ff;
+ --muted:#91a7bd;--mint:#63e6be;--blue:#74c0fc;--gold:#ffd43b;--red:#ff8787;
+ --purple:#b197fc;--shadow:0 18px 60px #0007
+}
+*{box-sizing:border-box}body{margin:0;background:
+radial-gradient(circle at 10% 0,#163c57 0,transparent 32%),
+radial-gradient(circle at 100% 100%,#163a35 0,transparent 30%),var(--bg);
+color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input{font:inherit}button{cursor:pointer;border:0}.wrap{width:min(1100px,94vw);margin:auto;padding:22px 0 48px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}
+.brand{display:flex;gap:11px;align-items:center}.logo{width:43px;height:43px;border-radius:14px;background:#17344c;display:grid;place-items:center;font-size:24px}
+.brand b{display:block}.brand small{color:var(--muted)}
+.card{background:linear-gradient(180deg,#102138f5,#0b1727f5);border:1px solid var(--line);border-radius:22px;padding:25px;box-shadow:var(--shadow)}
+.hidden{display:none!important}.center{text-align:center}.muted{color:var(--muted);line-height:1.65}
+h1{font-size:37px;letter-spacing:-1px;margin:5px 0 8px}h2{margin:0 0 10px}
+.btn{padding:13px 18px;border-radius:13px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.primary{background:linear-gradient(135deg,var(--mint),var(--blue));color:#06121c}.ghost{background:#182b43;color:var(--text);border:1px solid #2a4662}
+.danger{background:#4b2733;color:#ffd1d1}.gold{background:#4b3c16;color:#ffe9a1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.hero{padding:48px 26px;text-align:center}.heroIcon{font-size:68px}.hero .btn{width:100%;margin-top:10px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:999px;background:#18334b;color:#c7e7ff;font-size:12px;font-weight:800}
+.input{width:100%;padding:14px;border-radius:13px;border:1px solid #29435e;background:#081423;color:white;margin:7px 0 15px;outline:0}
+.label{font-size:13px;color:#b7c9da}.room{font-size:42px;letter-spacing:7px;font-weight:950;color:var(--mint);margin:10px}
+.qr{background:white;padding:13px;border-radius:17px;width:max-content;margin:13px auto}
+.status{padding:13px;border-radius:14px;background:#11273b;border:1px solid #254a65;margin-top:13px}
+.players{display:grid;gap:8px;max-height:300px;overflow:auto}.player{display:grid;grid-template-columns:34px 1fr auto;gap:9px;align-items:center;padding:11px 12px;background:#0b1929;border:1px solid #1e354d;border-radius:13px}
+.avatar{width:29px;height:29px;border-radius:9px;display:grid;place-items:center;background:#1b3850}.score{font-weight:950;color:var(--mint)}
+.gamebar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.money{font-size:25px;font-weight:950;color:var(--gold)}
+.timer{font-size:29px;font-weight:950;color:var(--gold)}.timer.dangerT{color:var(--red)}
+.progress{height:8px;background:#192b40;border-radius:99px;overflow:hidden;margin:16px 0}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--blue));transition:width .2s}
+.mission{padding:18px;background:#0b1929;border:1px solid #25415c;border-radius:18px;margin-top:15px}
+.missionTag{font-size:12px;font-weight:900;color:var(--blue);letter-spacing:1px}.question{font-size:25px;line-height:1.45;margin:12px 0 18px}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:11px}.ans{min-height:66px;text-align:left;padding:14px;border-radius:14px;background:#14283f;border:1px solid #2a4763;color:white;font-weight:800}
+.ans:hover:not(:disabled){border-color:var(--mint);transform:translateY(-1px)}.ans.selected{outline:2px solid var(--blue)}.ans.correct{background:#124936;border-color:var(--mint)}.ans.wrong{background:#4b2733;border-color:var(--red)}
+.letter{display:inline-grid;place-items:center;width:29px;height:29px;border-radius:8px;background:#213b55;margin-right:8px}
+.feedback{padding:13px;border-radius:14px;margin-top:13px;line-height:1.55}.ok{background:#103a2d;border:1px solid #2d8c6e}.no{background:#3c222d;border:1px solid #874759}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.item{padding:12px 8px;border-radius:13px;background:#13263c;border:1px solid #29455f;color:white;text-align:center;font-weight:800}.item small{display:block;color:var(--muted);font-weight:500;margin-top:3px}
+.lab{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.labItem{padding:9px 11px;border-radius:11px;background:#162d42;border:1px solid #2a4660;font-size:13px}
+.leader{display:grid;grid-template-columns:45px 1fr auto;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid #20374f}.rank{font-size:20px}.event{font-size:13px;color:#bcd0e2;padding:8px 0;border-bottom:1px solid #1b3045}
+.feature{padding:15px;border:1px solid #213b56;border-radius:16px;background:#0c1b2c}.feature b{display:block;margin-bottom:5px}.small{font-size:12px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);padding:13px 18px;border-radius:14px;background:#142a40;border:1px solid #345672;box-shadow:0 10px 35px #0009;z-index:10}
+hr{border:0;border-top:1px solid #20374f;margin:20px 0}
+@media(max-width:760px){.grid2,.grid3,.answers{grid-template-columns:1fr}.tools{grid-template-columns:repeat(2,1fr)}.heroIcon{font-size:56px}h1{font-size:31px}.card{padding:19px}.question{font-size:22px}.room{font-size:33px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+ <div class="brand"><div class="logo">🧪</div><div><b>ORGANIC LAB</b><small>Chem Heist • สมบัติของสารอินทรีย์</small></div></div>
+ <span class="pill">⏱️ 7 MIN • 👥 MAX 15</span>
+</header>
+
+<section id="home" class="card hero">
+ <div class="heroIcon">🧪</div><h1>CHEM HEIST</h1>
+ <p class="muted">ทำภารกิจเคมี → รับกล่องสุ่ม → สร้างห้องทดลอง → ใช้ไอเทมกับคู่แข่ง<br>ใครมี <b>Lab Value</b> สูงสุดเมื่อหมดเวลาเป็นผู้ชนะ</p>
+ <div class="grid2" style="margin-top:24px">
+  <button class="btn primary" onclick="openTeacher()">👨‍🏫 สร้างห้อง</button>
+  <button class="btn ghost" onclick="openJoin()">📱 เข้าห้อง</button>
+ </div>
+ <div class="grid3" style="margin-top:20px">
+  <div class="feature"><b>🔬 Mission</b><span class="small">โจทย์หลายรูปแบบ ไม่ใช่ข้อสอบอย่างเดียว</span></div>
+  <div class="feature"><b>🎁 Loot Box</b><span class="small">สุ่มไอเทมและชิ้นส่วนห้องทดลอง</span></div>
+  <div class="feature"><b>⚔️ Interaction</b><span class="small">ขโมย ป้องกัน และคูณรางวัล</span></div>
+ </div>
+</section>
+
+<section id="teacherSetup" class="card hidden">
+ <h1>👨‍🏫 สร้างห้อง</h1><p class="muted">สร้างห้องแล้วให้ทุกคนสแกน QR เดียวกัน</p>
+ <button class="btn primary" onclick="createRoom()">➕ สร้างห้องใหม่</button>
+ <button class="btn ghost" onclick="goHome()">กลับหน้าแรก</button>
+</section>
+
+<section id="teacherRoom" class="hidden">
+ <div class="grid2">
+  <div class="card center">
+   <span class="pill">ROOM CODE</span><div id="roomCode" class="room">------</div>
+   <div class="qr"><div id="qr"></div></div>
+   <p class="small">ให้นักเรียนสแกน QR แล้วใส่ชื่อ<br>เมื่อครบหรือพร้อมแล้วกดเริ่มเกม</p>
+  </div>
+  <div class="card">
+   <div class="gamebar"><h2>👥 ผู้เล่น</h2><span id="count" class="pill">0 / 15</span></div>
+   <div id="teacherPlayers" class="players"><p class="muted">กำลังรอผู้เล่น...</p></div>
+   <button id="start" class="btn primary" style="width:100%;margin-top:13px" onclick="startGame()" disabled>▶ เริ่ม CHEM HEIST</button>
+  </div>
+ </div>
+ <div class="card" style="margin-top:16px">
+  <div class="gamebar"><div><span class="pill">TEACHER DASHBOARD</span><h2 style="margin-top:8px">📊 สถานะห้อง</h2></div><div id="tTime" class="timer">07:00</div></div>
+  <div class="progress"><i id="tProgress"></i></div>
+  <div id="teacherEvents"><p class="muted">Event ต่าง ๆ จะแสดงตรงนี้เมื่อเกมเริ่ม</p></div>
+  <hr><h2>🏆 Leaderboard</h2><div id="tBoard"></div>
+ </div>
+</section>
+
+<section id="join" class="card hidden">
+ <h1>📱 เข้าห้อง CHEM HEIST</h1><p class="muted">ใช้ชื่อที่เพื่อนและครูจำได้ง่าย</p>
+ <label class="label">รหัสห้อง</label><input id="roomInput" class="input" maxlength="6" placeholder="เช่น A7K2P9">
+ <label class="label">ชื่อผู้เล่น</label><input id="nameInput" class="input" maxlength="18" placeholder="เช่น Bank">
+ <button class="btn primary" onclick="joinRoom()">🚀 เข้าร่วม</button>
+ <button class="btn ghost" onclick="goHome()">กลับหน้าแรก</button>
+ <div id="joinMsg" class="status hidden"></div>
+</section>
+
+<section id="playerGame" class="hidden">
+ <div class="card">
+  <div class="gamebar">
+   <div><span class="pill">ROOM <b id="pRoom"></b></span><h2 id="pTitle" style="margin-top:9px">รอครูเริ่มเกม</h2></div>
+   <div class="money">🪙 <span id="money">100</span></div>
+   <div class="timer" id="pTimer">07:00</div>
+  </div>
+  <div class="progress"><i id="pProgress"></i></div>
+  <div class="grid2">
+   <div id="missionArea" class="mission">
+    <div class="center"><div style="font-size:45px">🔬</div><h2>รอเริ่มภารกิจ</h2><p class="muted">เมื่อครูกดเริ่ม เกมจะเริ่มนับเวลา 7 นาที</p></div>
+   </div>
+   <div>
+    <div class="card" style="padding:18px">
+     <span class="pill">🎁 LOOT BOX</span><h2 style="margin-top:9px">กล่องของฉัน</h2>
+     <div id="boxArea"><p class="small">ทำภารกิจให้สำเร็จเพื่อรับกล่อง</p></div>
+    </div>
+    <div class="card" style="padding:18px;margin-top:14px">
+     <span class="pill">🧰 ITEMS</span><h2 style="margin-top:9px">ไอเทม</h2>
+     <div id="items" class="tools"></div>
+    </div>
+    <div class="card" style="padding:18px;margin-top:14px">
+     <span class="pill">🏭 MY LAB</span><h2 style="margin-top:9px">มูลค่าห้องทดลอง</h2>
+     <div class="lab" id="lab"></div>
+    </div>
+   </div>
+  </div>
+ </div>
+ <div class="card" style="margin-top:16px"><h2>🏆 อันดับสด</h2><div id="pBoard"></div></div>
+</section>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+/* ---------- GAME DATA ---------- */
+const MISSIONS=[
+ {type:"identify",tag:"IDENTIFY",q:"จากสูตร CH₃CH₂OH สารนี้มีหมู่ฟังก์ชันใด?",a:["Alcohol (–OH)","Ether (–O–)","Aldehyde (–CHO)","Carboxylic acid (–COOH)"],c:0,e:"Ethanol มีหมู่ –OH จึงจัดเป็น Alcohol"},
+ {type:"solubility",tag:"EXPERIMENT",q:"ถ้าต้องเลือกสารที่มีแนวโน้มละลายน้ำได้ดีที่สุด ควรเลือกข้อใด?",a:["Hexane","Ethanol","Benzene","Pentane"],c:1,e:"Ethanol มีหมู่ –OH และสามารถเกิดพันธะไฮโดรเจนกับน้ำได้"},
+ {type:"boiling",tag:"SORT",q:"ข้อใดเป็นเหตุผลที่เหมาะสมที่สุดที่สารบางชนิดมีจุดเดือดสูง?",a:["แรงยึดเหนี่ยวระหว่างโมเลกุลมาก","สีของสารเข้มกว่า","อะตอมมีสีต่างกัน","สารมีชื่อยาวกว่า"],c:0,e:"แรงยึดเหนี่ยวมากทำให้ต้องใช้พลังงานมากขึ้นในการแยกโมเลกุล"},
+ {type:"physical",tag:"LAB TEST",q:"ข้อใดเป็นสมบัติทางกายภาพของสารอินทรีย์?",a:["การติดไฟ","จุดเดือด","การเกิดสารใหม่","การออกซิไดซ์"],c:1,e:"จุดเดือดวัดได้โดยไม่ทำให้เกิดสารใหม่ จึงเป็นสมบัติทางกายภาพ"},
+ {type:"identify",tag:"IDENTIFY",q:"หมู่ –COOH เป็นหมู่ฟังก์ชันของสารกลุ่มใด?",a:["Alcohol","Alkene","Carboxylic acid","Ether"],c:2,e:"Carboxylic acid มีหมู่คาร์บอกซิล –COOH"},
+ {type:"polarity",tag:"POLARITY",q:"สารใดมีขั้วเด่นชัดกว่าในตัวเลือกนี้?",a:["Methane","Ethanol","Ethane","Propane"],c:1,e:"หมู่ –OH ทำให้ ethanol มีขั้วและเกิดแรงดึงดูดกับโมเลกุลมีขั้วได้"},
+ {type:"ester",tag:"CLUE",q:"Ester หลายชนิดมีสมบัติใดที่พบในชีวิตประจำวัน?",a:["มีกลิ่นคล้ายผลไม้บางชนิด","เป็นโลหะ","ไม่มีคาร์บอน","ละลายน้ำได้ทุกชนิด"],c:0,e:"Ester หลายชนิดมีกลิ่นหอมและถูกใช้ในกลิ่นหรือรส"},
+ {type:"combustion",tag:"REACTION",q:"การเผาไหม้สารอินทรีย์ที่มี C และ H อย่างสมบูรณ์มักได้อะไร?",a:["CO₂ และ H₂O","NaCl และ H₂","O₂ และ N₂","NH₃ และ H₂O"],c:0,e:"เมื่อเผาไหม้อย่างสมบูรณ์ คาร์บอนให้ CO₂ และไฮโดรเจนให้ H₂O"},
+ {type:"structure",tag:"STRUCTURE",q:"ข้อใดอธิบายความสัมพันธ์ระหว่างโครงสร้างกับสมบัติได้ดีที่สุด?",a:["โครงสร้างไม่มีผล","หมู่ฟังก์ชันและแรงยึดเหนี่ยวมีผล","มีแต่สีที่มีผล","ชื่อสารเป็นตัวกำหนดจุดเดือด"],c:1,e:"หมู่ฟังก์ชัน ขนาดโมเลกุล ความมีขั้ว และแรงยึดเหนี่ยวส่งผลต่อสมบัติ"},
+ {type:"hydrocarbon",tag:"IDENTIFY",q:"Hydrocarbon ประกอบด้วยธาตุใดเป็นหลัก?",a:["C และ H","C และ O","H และ O","N และ O"],c:0,e:"Hydrocarbon ประกอบด้วยคาร์บอนและไฮโดรเจนเท่านั้น"}
+];
+const ITEM_INFO={
+ steal:{icon:"🕵️",name:"STEAL",desc:"ขโมย 40 🪙 จากผู้เล่นที่เลือก"},
+ double:{icon:"⚡",name:"DOUBLE",desc:"ภารกิจถัดไปได้รางวัล ×2"},
+ shield:{icon:"🛡️",name:"SHIELD",desc:"ป้องกันการขโมย 1 ครั้ง"},
+ swap:{icon:"🔄",name:"SWAP",desc:"สลับเงินกับผู้เล่นที่เลือก"},
+ bonus:{icon:"🍀",name:"BONUS",desc:"รับเงินทันที +60 🪙"},
+ sabotage:{icon:"💥",name:"SABOTAGE",desc:"ลดเงินคู่แข่ง 50 🪙"}
+};
+const LAB_ITEMS=[
+ ["⚗️","Flask",40],["🔬","Microscope",60],["🧪","Reaction Tank",80],["🔥","Heating Unit",100],
+ ["💧","Purification Unit",120],["🧬","Molecular Scanner",150]
+];
+const BOXES=[
+ {name:"COMMON",icon:"⚪",items:["bonus","shield","double"]},
+ {name:"RARE",icon:"🔵",items:["double","shield","steal","bonus"]},
+ {name:"EPIC",icon:"🟣",items:["steal","swap","sabotage","double"]},
+ {name:"LEGENDARY",icon:"🟡",items:["swap","sabotage","steal","double"]}
+];
+
+/* ---------- STATE ---------- */
+let peer=null,teacherConn=null,room="",role="",players={},qIndex=0,gameStarted=false,gameEnded=false;
+let gameSeconds=420,gameTimer=null,missionTimer=null,missionTime=20;
+let my={id:"",name:"",money:100,score:100,items:{},lab:[],double:false,shield:0,box:null,missionDone:0};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function show(id){["home","teacherSetup","teacherRoom","join","playerGame"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+function goHome(){location.href=location.href.split("?")[0]}
+function openTeacher(){show("teacherSetup")}
+function openJoin(){show("join");const r=new URLSearchParams(location.search).get("room");if(r)$("roomInput").value=r}
+function code(){return Math.random().toString(36).slice(2,8).toUpperCase()}
+function toast(t){$("toast").textContent=t;$("toast").classList.remove("hidden");setTimeout(()=>$("toast").classList.add("hidden"),2300)}
+function pub(){return Object.values(players).map(p=>({id:p.id,name:p.name,money:p.money,score:p.score,mission:p.missionDone,shield:p.shield})).sort((a,b)=>b.score-a.score)}
+function broadcast(d){Object.values(players).forEach(p=>{try{p.conn.send(d)}catch(e){}})}
+function addEvent(t){$("teacherEvents").insertAdjacentHTML("afterbegin",`<div class="event">${t}</div>`);while($("teacherEvents").children.length>12)$("teacherEvents").lastElementChild.remove()}
+
+/* ---------- TEACHER ---------- */
+function createRoom(){
+ role="teacher";room=code();peer=new Peer("organiclab-"+room);
+ peer.on("open",()=>{
+  $("roomCode").textContent=room;show("teacherRoom");
+  const url=location.href.split("?")[0]+"?room="+room;
+  new QRCode($("qr"),{text:url,width:210,height:210});
+  history.replaceState({}, "", "?room="+room);renderTeacher();
+ });
+ peer.on("connection",c=>{
+  c.on("open",()=>c.on("data",d=>teacherReceive(c,d)));
+ });
+ peer.on("error",e=>toast("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้"));
+}
+function teacherReceive(c,d){
+ if(d.type==="join"){
+  if(gameStarted){c.send({type:"late"});return}
+  if(Object.keys(players).length>=15){c.send({type:"full"});return}
+  let name=d.name||"Player",base=name,n=2;
+  while(Object.values(players).some(p=>p.name.toLowerCase()===name.toLowerCase()))name=base+" ("+(n++)+")";
+  players[d.id]={id:d.id,name,score:100,money:100,missionDone:0,answer:null,conn:c,shield:0};
+  c.send({type:"welcome",id:d.id,name,room,players:pub()});
+  addEvent(`👤 <b>${esc(name)}</b> เข้าห้อง`);
+  renderTeacher();
+ }
+ if(d.type==="answer" && players[d.id] && gameStarted && !gameEnded){
+  const p=players[d.id];if(p.answer!==null)return;
+  p.answer=d.answer;const m=MISSIONS[qIndex];const correct=d.answer===m.c;
+  if(correct){
+   const reward=10;
+   p.money+=reward;p.score=p.money+labValueFor(p.id);
+   p.missionDone++;
+   const box=rollBox();const item=rollItem(box);
+   addItem(p,item);
+   if(p.answerDouble){p.money+=10;p.answerDouble=false}
+   c.send({type:"result",correct:true,explanation:m.e,item,box,score:p.score,money:p.money});
+   addEvent(`🧠 <b>${esc(p.name)}</b> สำเร็จภารกิจและได้ ${box.icon} ${box.name} BOX`);
+  }else{
+   c.send({type:"result",correct:false,explanation:m.e,score:p.score,money:p.money});
+  }
+  broadcast({type:"scores",players:pub()});renderTeacher();
+ }
+ if(d.type==="useItem" && players[d.id] && gameStarted && !gameEnded){
+  useItem(d.id,d.item,d.target);
+ }
+}
+function rollBox(){
+ const r=Math.random();return r<.06?BOXES[3]:r<.18?BOXES[2]:r<.42?BOXES[1]:BOXES[0]
+}
+function rollItem(box){return box.items[Math.floor(Math.random()*box.items.length)]}
+function addItem(p,item){p.items=p.items||{};p.items[item]=(p.items[item]||0)+1}
+function labValueFor(id){const p=players[id];return p&&p.lab?p.lab.reduce((s,x)=>s+x[2],0):0}
+function useItem(id,item,target){
+ const p=players[id];if(!p.items||!p.items[item])return;
+ if((item==="steal"||item==="swap"||item==="sabotage") && (!target||!players[target]||target===id))return;
+ if(item==="shield"){p.items[item]--;p.shield++;addEvent(`🛡️ <b>${esc(p.name)}</b> เปิด Shield`)}
+ if(item==="bonus"){p.items[item]--;p.money+=60}
+ if(item==="double"){p.items[item]--;p.answerDouble=true}
+ if(item==="steal"){
+  if(players[target].shield>0){players[target].shield--;p.items[item]--;addEvent(`🛡️ ${esc(players[target].name)} ป้องกันการขโมยสำเร็จ`)}
+  else{p.items[item]--;let amount=Math.min(40,players[target].money);players[target].money-=amount;p.money+=amount;addEvent(`🕵️ ${esc(p.name)} ขโมย ${amount} 🪙 จาก ${esc(players[target].name)}`)}
+ }
+ if(item==="swap"){
+  if(players[target].shield>0){players[target].shield--;p.items[item]--;addEvent(`🛡️ ${esc(players[target].name)} ป้องกัน SWAP`)}
+  else{p.items[item]--;let x=p.money;p.money=players[target].money;players[target].money=x;addEvent(`🔄 ${esc(p.name)} สลับเงินกับ ${esc(players[target].name)}`)}
+ }
+ if(item==="sabotage"){
+  if(players[target].shield>0){players[target].shield--;p.items[item]--;addEvent(`🛡️ ${esc(players[target].name)} ป้องกัน SABOTAGE`)}
+  else{p.items[item]--;players[target].money=Math.max(0,players[target].money-50);addEvent(`💥 ${esc(p.name)} ลดเงิน ${esc(players[target].name)} 50 🪙`)}
+ }
+ Object.values(players).forEach(x=>x.score=x.money+labValueFor(x.id));
+ broadcast({type:"scores",players:pub()});sendInventories();renderTeacher()
+}
+function sendInventories(){
+ Object.values(players).forEach(p=>{try{p.conn.send({type:"inventory",money:p.money,items:p.items||{},shield:p.shield,lab:p.lab||[],score:p.score})}catch(e){}})
+}
+function startGame(){
+ if(!Object.keys(players).length)return;
+ gameStarted=true;gameEnded=false;gameSeconds=420;qIndex=0;
+ broadcast({type:"start",seconds:420,mission:MISSIONS[qIndex],index:qIndex});
+ addEvent("🚀 <b>เกมเริ่มแล้ว!</b>");renderTeacher();startTeacherClock()
+}
+function startTeacherClock(){
+ clearInterval(gameTimer);gameTimer=setInterval(()=>{
+  gameSeconds--;renderTeacherClock();
+  if(gameSeconds<=0)finishGame();
+ },1000)
+}
+function finishGame(){
+ if(gameEnded)return;gameEnded=true;clearInterval(gameTimer);clearInterval(missionTimer);
+ Object.values(players).forEach(p=>p.score=p.money+labValueFor(p.id));
+ broadcast({type:"finished",players:pub()});renderTeacher();addEvent("🏁 <b>หมดเวลา — เกมจบ!</b>")
+}
+function renderTeacherClock(){
+ const mm=String(Math.floor(gameSeconds/60)).padStart(2,"0"),ss=String(gameSeconds%60).padStart(2,"0");
+ $("tTime").textContent=mm+":"+ss;$("tProgress").style.width=(gameSeconds/420*100)+"%"
+}
+function renderTeacher(){
+ $("count").textContent=Object.keys(players).length+" / 15";$("start").disabled=Object.keys(players).length===0||gameStarted;
+ $("teacherPlayers").innerHTML=pub().map((p,i)=>`<div class="player"><div class="avatar">${i<3?["🥇","🥈","🥉"][i]:"👤"}</div><div><b>${esc(p.name)}</b><div class="small">Mission ${p.mission}/10 • 🛡️ ${p.shield||0}</div></div><div class="score">${p.score}</div></div>`).join("")||"<p class='muted'>กำลังรอผู้เล่น...</p>";
+ $("tBoard").innerHTML=pub().map((p,i)=>`<div class="leader"><div class="rank">${i<3?["🥇","🥈","🥉"][i]:i+1}</div><div>${esc(p.name)}<div class="small">Mission ${p.mission}/10</div></div><div class="score">${p.score}</div></div>`).join("");
+ if(gameEnded){$("teacherEvents").insertAdjacentHTML("afterbegin","<div class='event'>🏆 Final Leaderboard แสดงอยู่ด้านล่าง</div>")}
+ renderTeacherClock()
+}
+
+/* ---------- PLAYER ---------- */
+function joinRoom(){
+ room=$("roomInput").value.trim().toUpperCase();const name=$("nameInput").value.trim()||"Player";
+ if(!room){showJoinMsg("กรุณาใส่รหัสห้อง");return}
+ peer=new Peer();
+ peer.on("open",id=>{
+  my.id=id;my.name=name;
+  teacherConn=peer.connect("organiclab-"+room,{reliable:true});
+  teacherConn.on("open",()=>teacherConn.send({type:"join",id,name}));
+  teacherConn.on("data",playerReceive);
+  teacherConn.on("error",()=>showJoinMsg("การเชื่อมต่อขัดข้อง"));
+ });
+ peer.on("error",()=>showJoinMsg("ไม่พบห้อง หรือห้องยังไม่พร้อม"));
+}
+function showJoinMsg(t){$("joinMsg").textContent=t;$("joinMsg").classList.remove("hidden")}
+function playerReceive(d){
+ if(d.type==="full"){show("join");showJoinMsg("ห้องเต็มแล้ว (สูงสุด 15 คน)");return}
+ if(d.type==="late"){show("join");showJoinMsg("เกมเริ่มไปแล้ว ห้องนี้รับผู้เล่นใหม่ไม่ได้");return}
+ if(d.type==="welcome"){
+  my.name=d.name;my.id=d.id;room=d.room;show("playerGame");$("pRoom").textContent=room;renderPlayerBoard(d.players);toast("เข้าห้องสำเร็จ");
+ }
+ if(d.type==="start"){gameStarted=true;gameEnded=false;gameSeconds=d.seconds;renderPlayerQuestion(d.index,d.mission);startPlayerClock()}
+ if(d.type==="result"){
+  my.money=d.money;my.score=d.score;my.box=d.box;addLocalItem(d.item);
+  showResult(d);renderPlayerSide();startNextMission(900)
+ }
+ if(d.type==="inventory"){my.money=d.money;my.score=d.score;my.items=d.items||{};my.shield=d.shield||0;my.lab=d.lab||[];renderPlayerSide()}
+ if(d.type==="scores"){renderPlayerBoard(d.players);const me=d.players.find(x=>x.id===my.id);if(me){my.money=me.money;my.score=me.score}renderPlayerSide()}
+ if(d.type==="timeup"){disableMission();toast("หมดเวลา")}
+ if(d.type==="finished"){gameEnded=true;clearInterval(gameTimer);clearInterval(missionTimer);renderFinal(d.players)}
+}
+function renderPlayerQuestion(i,m){
+ qIndex=i;answered=false;missionTime=20;clearInterval(missionTimer);
+ $("pTitle").textContent="MISSION "+(my.missionDone+1);$("missionArea").innerHTML=
+ `<div class="missionTag">${m.tag}</div><div class="question">${m.q}</div><div class="answers">${m.a.map((x,j)=>`<button class="ans" onclick="answer(${j})"><span class="letter">${String.fromCharCode(65+j)}</span>${x}</button>`).join("")}</div><div id="feedback"></div>`;
+ startMissionTimer()
+}
+function answer(i){
+ if(answered||!teacherConn||gameEnded)return;answered=true;clearInterval(missionTimer);
+ document.querySelectorAll(".ans").forEach((b,j)=>{b.disabled=true;if(j===i)b.classList.add("selected")});
+ teacherConn.send({type:"answer",id:my.id,answer:i})
+}
+function startMissionTimer(){
+ clearInterval(missionTimer);missionTime=20;updateMissionTimer();
+ missionTimer=setInterval(()=>{missionTime--;updateMissionTimer();if(missionTime<=0){clearInterval(missionTimer);disableMission();teacherConn.send({type:"answer",id:my.id,answer:-1})}},1000)
+}
+function updateMissionTimer(){
+ const pct=Math.max(0,missionTime/20*100);$("pProgress").style.width=(gameSeconds/420*100)+"%";
+ const el=$("feedback");if(el&&!answered)el.innerHTML=`<div class="small">⏱️ เวลาภารกิจ ${missionTime} วินาที</div>`
+}
+function disableMission(){document.querySelectorAll(".ans").forEach(b=>b.disabled=true);answered=true}
+function showResult(d){
+ const f=$("feedback");if(!f)return;
+ document.querySelectorAll(".ans").forEach((b,i)=>{b.disabled=true;if(i===MISSIONS[qIndex].c)b.classList.add("correct")});
+ f.innerHTML=`<div class="feedback ${d.correct?"ok":"no"}">${d.correct?"✅ ภารกิจสำเร็จ!":"❌ ภารกิจไม่สำเร็จ"}<br><span class="small">${esc(d.explanation)}</span>${d.correct?`<br>🎁 ได้ ${d.box.icon} <b>${d.box.name} BOX</b> → ${ITEM_INFO[d.item].icon} ${ITEM_INFO[d.item].name}`:""}</div>`;
+ if(d.correct)my.missionDone++;
+}
+function startNextMission(delay=900){
+ if(gameEnded)return;
+ setTimeout(()=>{
+  if(gameEnded)return;
+  qIndex=(qIndex+1)%MISSIONS.length;renderPlayerQuestion(qIndex,MISSIONS[qIndex])
+ },delay)
+}
+function startPlayerClock(){
+ clearInterval(gameTimer);renderPlayerClock();gameTimer=setInterval(()=>{gameSeconds--;renderPlayerClock();if(gameSeconds<=0){clearInterval(gameTimer);disableMission()}},1000)
+}
+function renderPlayerClock(){
+ const mm=String(Math.max(0,Math.floor(gameSeconds/60))).padStart(2,"0"),ss=String(Math.max(0,gameSeconds%60)).padStart(2,"0");
+ $("pTimer").textContent=mm+":"+ss;$("pProgress").style.width=(gameSeconds/420*100)+"%";
+ $("pTimer").classList.toggle("dangerT",gameSeconds<=60)
+}
+function addLocalItem(item){my.items[item]=(my.items[item]||0)+1}
+function renderPlayerSide(){
+ $("money").textContent=my.money;
+ $("items").innerHTML=Object.entries(my.items).map(([key,n])=>{const inf=ITEM_INFO[key];return `<button class="item ${n?'':'disabled'}" onclick="useItem('${key}')">${inf.icon} ${inf.name}<small>x${n}</small></button>`}).join("")||"<p class='small'>ยังไม่มีไอเทม</p>";
+ $("lab").innerHTML=(my.lab||[]).map(x=>`<div class="labItem">${x[0]} ${x[1]} <b>+${x[2]}</b></div>`).join("")||"<p class='small'>ทำภารกิจเพื่อสะสมชิ้นส่วนห้องทดลอง</p>";
+}
+function useItem(item){
+ if(!my.items[item])return;
+ if(item==="bonus"||item==="double"||item==="shield"){teacherConn.send({type:"useItem",id:my.id,item});my.items[item]--;renderPlayerSide();return}
+ const list=Object.values(lastPlayers||{}).filter(p=>p.id!==my.id);
+ if(!list.length){toast("ยังไม่มีผู้เล่นอื่น");return}
+ const target=list[0];
+ const t=prompt("พิมพ์ชื่อผู้เล่นเป้าหมาย:\n"+list.map(p=>p.name).join(", "));
+ const found=list.find(p=>p.name.toLowerCase()===String(t||"").toLowerCase());
+ if(!found){toast("ไม่พบผู้เล่นเป้าหมาย");return}
+ teacherConn.send({type:"useItem",id:my.id,item,target:found.id});my.items[item]--;renderPlayerSide()
+}
+let lastPlayers={};
+function renderPlayerBoard(ps){lastPlayers={};ps.forEach(p=>lastPlayers[p.id]=p);$("pBoard").innerHTML=ps.map((p,i)=>`<div class="leader"><div class="rank">${i<3?["🥇","🥈","🥉"][i]:i+1}</div><div>${esc(p.name)}<div class="small">Mission ${p.mission}/10</div></div><div class="score">${p.score}</div></div>`).join("")}
+function renderFinal(ps){
+ clearInterval(gameTimer);clearInterval(missionTimer);
+ const me=ps.find(p=>p.id===my.id);$("pTitle").textContent="🏁 เกมจบ!";
+ $("missionArea").innerHTML=`<div class="center"><div style="font-size:58px">🏆</div><h1>CHEM HEIST COMPLETE</h1><p class="muted">Lab Value ของคุณ</p><div class="money" style="font-size:42px">🪙 ${me?me.score:my.score}</div></div>`;
+ renderPlayerBoard(ps);renderPlayerSide()
+}
+function addLocalLab(item){my.lab.push(item)}
+const originalRenderInventory=renderPlayerSide;
+
+/* Add lab reward on correct mission via box: handled locally for visual progression */
+const oldReceive=playerReceive;
+/* Patch result handling for lab parts while keeping one message flow */
+function playerReceivePatched(d){
+ oldReceive(d);
+ if(d.type==="result"&&d.correct){
+  const part=LAB_ITEMS[Math.floor(Math.random()*LAB_ITEMS.length)];
+  my.lab.push(part);my.score+=part[2];renderPlayerSide();
+ }
+}
+playerReceive=playerReceivePatched;
+
+const rp=new URLSearchParams(location.search).get("room");if(rp){openJoin();$("roomInput").value=rp}
+</script>
+</body>
+</html>
